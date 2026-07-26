@@ -15,9 +15,11 @@ func Calculate(
 
 	gross := sell - buy
 
-	fees := sell * (BrokerFee + SalesTax)
+	net := sell*(1-BrokerFee-SalesTax) - buy
 
-	net := sell - fees - buy
+	grossMargin := (gross / buy) * 100
+
+	roi := (net / buy) * 100
 
 	return model.Opportunity{
 		BuyPrice:  buy,
@@ -27,6 +29,22 @@ func Calculate(
 		GrossProfit: gross,
 		NetProfit:   net,
 
-		ROI: net / buy * 100,
+		GrossMargin: grossMargin,
+		ROI:         roi,
+
+		Verdict: verdict(roi),
+	}
+}
+
+func verdict(roi float64) string {
+	switch {
+	case roi >= 20:
+		return "✅ GOOD"
+	case roi >= 10:
+		return "👍 ACCEPTABLE"
+	case roi >= 5:
+		return "🟡 WEAK"
+	default:
+		return "⏭️ SKIP"
 	}
 }

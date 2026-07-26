@@ -10,12 +10,17 @@ type MarketOrder struct {
 }
 
 type Opportunity struct {
-	TypeID    int
+	TypeID int
+
 	BuyPrice  float64
 	SellPrice float64
 	Volume    int
 
 	GrossProfit float64
 	NetProfit   float64
+
+	GrossMargin float64
 	ROI         float64
+
+	Verdict string
 }

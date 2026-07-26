@@ -22,8 +22,6 @@ func GetOrders(typeID int) ([]model.MarketOrder, error) {
 		typeID,
 	)
 
-	fmt.Println("esi_url", url)
-
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err

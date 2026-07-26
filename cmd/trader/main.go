@@ -2,73 +2,45 @@ package main
 
 import (
 	"fmt"
-
-	"github.com/istvzsig/eve-trader/internal/esi"
-	"github.com/istvzsig/eve-trader/internal/market"
+	"os"
 )
 
 func main() {
 
-	typeID := 22291 // Ballistic Control System II
-
-	orders, err := esi.GetOrders(typeID)
-
-	if err != nil {
-		panic(err)
+	if len(os.Args) < 2 {
+		help()
+		return
 	}
 
-	var buy float64
-	var sell float64
+	switch os.Args[1] {
 
-	for _, o := range orders {
+	case "calculate":
+		RunCalculator(os.Args[2:])
 
-		if o.IsBuyOrder {
+	case "market":
+		RunMarket(os.Args[2:])
 
-			if buy == 0 || o.Price > buy {
-				buy = o.Price
-			}
-
-		} else {
-
-			if sell == 0 || o.Price < sell {
-				sell = o.Price
-			}
-		}
+	default:
+		help()
 	}
+}
 
-	result := market.Calculate(
-		buy,
-		sell,
-		1,
-	)
+func help() {
 
-	fmt.Println("==============================")
-	fmt.Println("EVE TRADER")
-	fmt.Println("==============================")
+	fmt.Println(`
+EVE Trader
 
-	fmt.Printf(
-		"Buy: %.2f ISK\n",
-		result.BuyPrice,
-	)
+Commands:
 
-	fmt.Printf(
-		"Sell: %.2f ISK\n",
-		result.SellPrice,
-	)
+	calculate SELL BUY [VOLUME]
 
-	fmt.Printf(
-		"Gross: %.2f ISK\n",
-		result.GrossProfit,
-	)
+	Example:
+		eve-trader calculate 417 282 3
 
-	fmt.Printf(
-		"Net: %.2f ISK\n",
-		result.NetProfit,
-	)
 
-	fmt.Printf(
-		"ROI: %.2f%%\n",
-		result.ROI,
-	)
+	market TYPE_ID
 
+	Example:
+		eve-trader market 22291
+`)
 }

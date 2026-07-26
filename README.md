@@ -15,6 +15,13 @@ A CLI tool for analyzing EVE Online Jita market opportunities.
 go run ./cmd/trader
 ```
 
+Use calculator directly:
+
+```bash
+go build -o eve-trader ./cmd/trader
+./eve-trader calculate 422 100 1
+```
+
 ## Example
 
 ```text
