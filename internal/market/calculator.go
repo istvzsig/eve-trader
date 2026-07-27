@@ -14,8 +14,10 @@ func Calculate(
 ) model.Opportunity {
 
 	gross := sell - buy
-
 	net := sell*(1-BrokerFee-SalesTax) - buy
+
+	totalGross := gross * float64(volume)
+	totalNet := net * float64(volume)
 
 	grossMargin := (gross / buy) * 100
 
@@ -26,8 +28,10 @@ func Calculate(
 		SellPrice: sell,
 		Volume:    volume,
 
-		GrossProfit: gross,
-		NetProfit:   net,
+		GrossProfit:      gross,
+		NetProfit:        net,
+		TotalGrossProfit: totalGross,
+		TotalNetProfit:   totalNet,
 
 		GrossMargin: grossMargin,
 		ROI:         roi,

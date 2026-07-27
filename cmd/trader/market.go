@@ -13,8 +13,8 @@ import (
 )
 
 func RunMarginTrader(args []string) {
-	if len(args) != 1 {
-		fmt.Println("usage: eve-trader margin-trade PCT   (e.g. 15 or 20%)")
+	if len(args) < 1 || len(args) > 2 {
+		fmt.Println("usage: eve-trader margin-trade PCT [MAX_QUANTITY]")
 		return
 	}
 
@@ -24,42 +24,63 @@ func RunMarginTrader(args []string) {
 		return
 	}
 
+	maxVolume := 1
+
+	if len(args) == 2 {
+		maxVolume, err = strconv.Atoi(args[1])
+		if err != nil || maxVolume <= 0 {
+			fmt.Println("invalid quantity:", args[1])
+			return
+		}
+	}
+
 	low := target - 5
 	high := target + 5
 
 	type best struct {
-		buy  float64 // best bid (max of buy orders)
-		sell float64 // best ask (min of sell orders)
+		buy        float64
+		sell       float64
+		buyVolume  int
+		sellVolume int
 	}
 
 	byType := map[int]*best{}
 
-	regionID := esi.JitaID
 	page := 1
 	totalPages := 1
 
 	for page <= totalPages {
-		orders, pages, err := esi.GetRegionOrders(regionID, page)
+
+		orders, pages, err := esi.GetRegionOrders(esi.JitaID, page)
+
 		if err != nil {
-			fmt.Println("error fetching region orders:", err)
+			fmt.Println("error fetching orders:", err)
 			return
 		}
+
 		totalPages = pages
 
 		for _, o := range orders {
+
 			b := byType[o.TypeID]
+
 			if b == nil {
 				b = &best{}
 				byType[o.TypeID] = b
 			}
 
 			if o.IsBuyOrder {
+
 				if b.buy == 0 || o.Price > b.buy {
 					b.buy = o.Price
+					b.buyVolume = o.VolumeRemain
 				}
+
 			} else {
+
 				if b.sell == 0 || o.Price < b.sell {
 					b.sell = o.Price
+					b.sellVolume = o.VolumeRemain
 				}
 			}
 		}
@@ -70,55 +91,124 @@ func RunMarginTrader(args []string) {
 	candidates := make([]model.Candidate, 0)
 
 	for typeID, b := range byType {
+
 		if b.buy == 0 || b.sell == 0 {
 			continue
 		}
 
-		opp := market.Calculate(b.buy, b.sell, 1)
+		volume := min(
+			maxVolume,
+			b.buyVolume,
+			b.sellVolume,
+		)
+
+		if volume <= 0 {
+			continue
+		}
+
+		opp := market.Calculate(
+			b.buy,
+			b.sell,
+			volume,
+		)
+
 		if opp.ROI >= low && opp.ROI <= high {
-			candidates = append(candidates, model.Candidate{TypeID: typeID, Opp: opp})
+			candidates = append(
+				candidates,
+				model.Candidate{
+					TypeID: typeID,
+					Opp:    opp,
+				},
+			)
 		}
 	}
 
 	sort.Slice(candidates, func(i, j int) bool {
-		return candidates[i].Opp.ROI > candidates[j].Opp.ROI
+		return candidates[i].Opp.TotalNetProfit >
+			candidates[j].Opp.TotalNetProfit
 	})
 
 	fmt.Println("==============================")
-	fmt.Println("MARGIN TRADER (ROI within target +/- 5%)")
-	fmt.Printf("Target: %.2f%%  Range: %.2f%% - %.2f%%\n", target, low, high)
+	fmt.Println("MARGIN TRADER")
+	fmt.Printf(
+		"Target ROI: %.2f%% (%.2f%% - %.2f%%)\n",
+		target,
+		low,
+		high,
+	)
+	fmt.Printf("Max Quantity: %d\n", maxVolume)
 	fmt.Println("==============================")
 
 	for i := 0; i < len(candidates) && i < 10; i++ {
+
 		c := candidates[i]
 
 		name, err := esi.GetTypeName(c.TypeID)
+
 		if err != nil {
 			name = "(unknown)"
 		}
 
 		fmt.Printf(
-			"[%d] %s (TypeID=%d) Buy=%s Sell=%s ROI=%.2f%% Verdict=%s Net=%s\n",
+			"\n[%d] %s\n",
 			i+1,
 			name,
-			c.TypeID,
+		)
+
+		fmt.Printf(
+			"Buy: %s  Sell: %s\n",
 			format.ISK(c.Opp.BuyPrice),
 			format.ISK(c.Opp.SellPrice),
+		)
+
+		fmt.Printf(
+			"Volume: %d\n",
+			c.Opp.Volume,
+		)
+
+		fmt.Printf(
+			"ROI: %.2f%%  %s\n",
 			c.Opp.ROI,
 			c.Opp.Verdict,
+		)
+
+		fmt.Printf(
+			"Profit/unit: %s\n",
 			format.ISK(c.Opp.NetProfit),
+		)
+
+		fmt.Printf(
+			"Total Profit: %s\n",
+			format.ISK(c.Opp.TotalNetProfit),
 		)
 	}
 }
 
 func RunMarket(args []string) {
 
-	if len(args) < 1 {
-		fmt.Println("usage: market TYPE_ID")
+	if len(args) < 1 || len(args) > 2 {
+		fmt.Println("usage: market TYPE_ID [QUANTITY]")
 		return
 	}
 
-	typeID, _ := strconv.Atoi(args[0])
+	typeID, err := strconv.Atoi(args[0])
+
+	if err != nil {
+		fmt.Println("invalid type id")
+		return
+	}
+
+	volume := 1
+
+	if len(args) == 2 {
+
+		volume, err = strconv.Atoi(args[1])
+
+		if err != nil || volume <= 0 {
+			fmt.Println("invalid quantity")
+			return
+		}
+	}
 
 	orders, err := esi.GetOrders(typeID)
 
@@ -148,7 +238,7 @@ func RunMarket(args []string) {
 	result := market.Calculate(
 		buy,
 		sell,
-		1,
+		volume,
 	)
 
 	fmt.Println("==============================")
@@ -157,7 +247,8 @@ func RunMarket(args []string) {
 
 	fmt.Println("Buy:", format.ISK(result.BuyPrice))
 	fmt.Println("Sell:", format.ISK(result.SellPrice))
-	fmt.Println("ROI:", result.ROI)
+	fmt.Println("Volume:", result.Volume)
+	fmt.Printf("ROI: %.2f%%\n", result.ROI)
 	fmt.Println("Verdict:", result.Verdict)
-
+	fmt.Println("Total Profit:", format.ISK(result.TotalNetProfit))
 }
