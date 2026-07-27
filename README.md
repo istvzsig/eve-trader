@@ -1,46 +1,271 @@
 # EVE Trader
 
-A CLI tool for analyzing EVE Online Jita market opportunities.
+A CLI assistant for analyzing EVE Online Jita market opportunities and improving Alpha account trading decisions.
 
-## Features
+## Current Gameplay Progress
 
-- Fetch Jita market orders from EVE ESI API
-- Calculate buy/sell spread
-- Calculate broker fees and sales tax
-- Calculate real ROI after fees
+### Alpha Trading Status
 
-## Usage
+Current goal:
 
-```bash
-go run ./cmd/trader
+> Build a sustainable Alpha-only Jita trading operation using market analysis instead of random flipping.
+
+Current focus:
+
+- Station trading in Jita IV - Moon 4 - Caldari Navy Assembly Plant
+- Buying from player buy orders
+- Selling into player sell orders
+- Maximizing profit with limited Alpha skills and order slots
+
+---
+
+## Current Account Situation
+
+Example:
+
+```
+Wallet:
+36M ISK
+
+Open Orders:
+10 / 17
+
+Remaining Slots:
+7
+
+Total Buy Order Escrow:
+43.3M ISK
+
+Sell Orders:
+105.5M ISK
 ```
 
-Use calculator:
+Current limitation:
+
+- Capital is the main bottleneck
+- Alpha order slots limit diversification
+- Expensive items are usually not practical despite high ROI
+
+---
+
+## Trading Strategy
+
+Current strategy:
+
+### Margin Trading
+
+Find items where:
+
+```
+Sell Price - Buy Price
+```
+
+creates a profitable spread after:
+
+- Broker fees
+- Sales tax
+- Limited Alpha skills
+
+Example:
+
+```
+Buy:
+3.79M ISK
+
+Sell:
+4.17M ISK
+
+Gross Profit:
+380K ISK
+
+After Fees:
+~250K ISK
+```
+
+---
+
+## Current Trading Tools
+
+### Market Check
+
+Check individual items:
 
 ```bash
-go build -o eve-trader ./cmd/trader
-./eve-trader calculate 422 100 1
+./eve-trader market TYPE_ID
 ```
 
 Example:
 
-```text
-Buy: 826300 ISK
-Sell: 885900 ISK
-ROI: -4.04%
+```bash
+./eve-trader market 22291
 ```
 
-Use margin-trader:
+---
+
+### Profit Calculator
+
+Test a trade:
 
 ```bash
-go build -o eve-trader ./cmd/trader
-./eve-trader margin-trader 20
+./eve-trader calculate SELL BUY QUANTITY
 ```
 
 Example:
 
-```text
-[1] Makra's Modified Small Focused Pulse Laser (TypeID=85012) Buy=2.80B ISK Sell=3.91B ISK ROI=25.00% Verdict=✅ GOOD Net=700.24M ISK
-[2] Medium 'Integrative' Hull Repair Unit (TypeID=21506) Buy=10.02M ISK Sell=13.99M ISK ROI=24.96% Verdict=✅ GOOD Net=2.50M ISK
-[3] Corpum B-Type Thermal Energized Membrane (TypeID=18861) Buy=50.48M ISK Sell=70.47M ISK ROI=24.94% Verdict=✅ GOOD Net=12.59M ISK
+```bash
+./eve-trader calculate 417 282 3
 ```
+
+---
+
+### Margin Scanner
+
+Search Jita for opportunities:
+
+```bash
+./eve-trader margin-trade 20
+```
+
+Example:
+
+```
+[1] Medium 'Integrative' Hull Repair Unit
+
+Buy:
+10.02M ISK
+
+Sell:
+13.99M ISK
+
+ROI:
+24.96%
+
+Profit:
+2.50M ISK
+```
+
+---
+
+# Gameplay Roadmap
+
+## Phase 1 - Starting Capital ✅
+
+Goal:
+
+```
+0 ISK → 50M ISK
+```
+
+Focus:
+
+- Cheap modules
+- Ammo
+- Popular PvE/PvP items
+- Fast turnover
+
+Avoid:
+
+- Billion ISK collector items
+- SKINs
+- Rare modules with 1 volume
+
+---
+
+## Phase 2 - Alpha Station Trader 🟡
+
+Goal:
+
+```
+50M ISK → 500M ISK
+```
+
+Focus:
+
+- 17 order slots
+- High liquidity items
+- Multiple small positions
+
+Preferred trades:
+
+```
+Buy:
+1M-20M ISK
+
+ROI:
+10-30%
+
+Daily volume:
+high
+```
+
+---
+
+## Phase 3 - Scale Capital 🔜
+
+Goal:
+
+```
+500M ISK → several billion ISK
+```
+
+Improve:
+
+- More order slots
+- Better trading skills
+- Larger inventory
+- More expensive items
+
+---
+
+# Current Weaknesses
+
+The scanner can find:
+
+```
+20B ISK item
+30% ROI
+```
+
+but Alpha cannot realistically trade it.
+
+Future filters needed:
+
+- Wallet limit
+- Maximum buy cost
+- Minimum market volume
+- Liquidity score
+- Expected turnover time
+
+---
+
+# Long Term Goal
+
+Create an Alpha-friendly EVE trading assistant:
+
+```
+ESI API
+   |
+Market Scanner
+   |
+Profit Calculator
+   |
+Risk Filter
+   |
+Trade Recommendation
+```
+
+The goal is not finding the biggest ROI.
+
+The goal is finding:
+
+```
+Affordable
++
+Liquid
++
+Repeatable
++
+Profitable
+```
+
+trades.
