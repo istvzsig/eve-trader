@@ -29,3 +29,7 @@ type Candidate struct {
 	TypeID int
 	Opp    Opportunity
 }
+
+type TypeInfo struct {
+	Name string `json:"name"`
+}

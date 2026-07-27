@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/istvzsig/eve-trader/internal/model"
@@ -18,6 +19,44 @@ const (
 
 var httpClient = &http.Client{
 	Timeout: 20 * time.Second,
+}
+
+var (
+	typeNameCache = map[int]string{}
+	typeNameMu    = sync.Mutex{}
+)
+
+func GetTypeName(typeID int) (string, error) {
+	typeNameMu.Lock()
+	if n, ok := typeNameCache[typeID]; ok {
+		typeNameMu.Unlock()
+		return n, nil
+	}
+	typeNameMu.Unlock()
+
+	url := fmt.Sprintf("%s/universe/types/%d/", BaseURL, typeID)
+
+	resp, err := httpClient.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("esi type name error: status=%d body=%s", resp.StatusCode, string(body))
+	}
+
+	var ti model.TypeInfo
+	if err := json.NewDecoder(resp.Body).Decode(&ti); err != nil {
+		return "", err
+	}
+
+	typeNameMu.Lock()
+	typeNameCache[typeID] = ti.Name
+	typeNameMu.Unlock()
+
+	return ti.Name, nil
 }
 
 func GetOrders(typeID int) ([]model.MarketOrder, error) {

@@ -91,9 +91,16 @@ func RunMarginTrader(args []string) {
 
 	for i := 0; i < len(candidates) && i < 10; i++ {
 		c := candidates[i]
+
+		name, err := esi.GetTypeName(c.TypeID)
+		if err != nil {
+			name = "(unknown)"
+		}
+
 		fmt.Printf(
-			"[%d] TypeID=%d Buy=%s Sell=%s ROI=%.2f%% Verdict=%s Net=%s\n",
+			"[%d] %s (TypeID=%d) Buy=%s Sell=%s ROI=%.2f%% Verdict=%s Net=%s\n",
 			i+1,
+			name,
 			c.TypeID,
 			format.ISK(c.Opp.BuyPrice),
 			format.ISK(c.Opp.SellPrice),
