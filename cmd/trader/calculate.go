@@ -6,11 +6,8 @@ import (
 
 	"github.com/istvzsig/eve-trader/internal/format"
 	"github.com/istvzsig/eve-trader/internal/market"
+	"github.com/istvzsig/eve-trader/internal/parse"
 )
-
-func ParseISK(value float64) float64 {
-	return value * 1000
-}
 
 func RunCalculator(args []string) {
 
@@ -22,8 +19,8 @@ func RunCalculator(args []string) {
 	sellInput, _ := strconv.ParseFloat(args[0], 64)
 	buyInput, _ := strconv.ParseFloat(args[1], 64)
 
-	sell := ParseISK(sellInput)
-	buy := ParseISK(buyInput)
+	sell := parse.ISK(sellInput)
+	buy := parse.ISK(buyInput)
 
 	volume := 1
 
