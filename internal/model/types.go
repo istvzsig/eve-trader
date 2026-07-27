@@ -24,3 +24,8 @@ type Opportunity struct {
 
 	Verdict string
 }
+
+type Candidate struct {
+	TypeID int
+	Opp    Opportunity
+}

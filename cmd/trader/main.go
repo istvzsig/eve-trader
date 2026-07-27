@@ -20,6 +20,9 @@ func main() {
 	case "market":
 		RunMarket(os.Args[2:])
 
+	case "margin-trade":
+		RunMarginTrader(os.Args[2:])
+
 	default:
 		help()
 	}
@@ -42,5 +45,11 @@ Commands:
 
 	Example:
 		eve-trader market 22291
-`)
+
+	margin-trade PERCENT
+
+	Examples:
+		eve-trader margin-trade 15
+		eve-trader margin-trade 20%
+	`)
 }
