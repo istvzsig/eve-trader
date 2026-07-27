@@ -2,3 +2,6 @@
 .vs_code
 .env
 .env**
+
+*bin
+eve-trader
