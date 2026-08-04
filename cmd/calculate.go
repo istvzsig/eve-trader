@@ -10,7 +10,6 @@ import (
 )
 
 func RunCalculator(args []string) {
-
 	if len(args) < 2 {
 		fmt.Println("usage: calculate SELL BUY [VOLUME]")
 		return

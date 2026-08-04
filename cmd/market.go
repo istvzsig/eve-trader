@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/istvzsig/eve-trader/internal/config"
 	"github.com/istvzsig/eve-trader/internal/esi"
 	"github.com/istvzsig/eve-trader/internal/format"
 	"github.com/istvzsig/eve-trader/internal/market"
@@ -12,7 +13,7 @@ import (
 	"github.com/istvzsig/eve-trader/internal/parse"
 )
 
-func RunMarginTrader(args []string) {
+func RunMarginTrader(c esi.Esi, args []string) {
 	if len(args) < 1 || len(args) > 2 {
 		fmt.Println("usage: eve-trader margin-trade PCT [MAX_QUANTITY]")
 		return
@@ -51,7 +52,7 @@ func RunMarginTrader(args []string) {
 
 	for page <= totalPages {
 
-		orders, pages, err := esi.GetRegionOrders(esi.JitaID, page)
+		orders, pages, err := c.GetRegionOrders(page, config.JitaID)
 
 		if err != nil {
 			fmt.Println("error fetching orders:", err)
@@ -141,9 +142,9 @@ func RunMarginTrader(args []string) {
 
 	for i := 0; i < len(candidates) && i < 10; i++ {
 
-		c := candidates[i]
+		cn := candidates[i]
 
-		name, err := esi.GetTypeName(c.TypeID)
+		name, err := c.GetTypeName(cn.TypeID)
 
 		if err != nil {
 			name = "(unknown)"
@@ -157,98 +158,29 @@ func RunMarginTrader(args []string) {
 
 		fmt.Printf(
 			"Buy: %s  Sell: %s\n",
-			format.ISK(c.Opp.BuyPrice),
-			format.ISK(c.Opp.SellPrice),
+			format.ISK(cn.Opp.BuyPrice),
+			format.ISK(cn.Opp.SellPrice),
 		)
 
 		fmt.Printf(
 			"Volume: %d\n",
-			c.Opp.Volume,
+			cn.Opp.Volume,
 		)
 
 		fmt.Printf(
 			"ROI: %.2f%%  %s\n",
-			c.Opp.ROI,
-			c.Opp.Verdict,
+			cn.Opp.ROI,
+			cn.Opp.Verdict,
 		)
 
 		fmt.Printf(
 			"Profit/unit: %s\n",
-			format.ISK(c.Opp.NetProfit),
+			format.ISK(cn.Opp.NetProfit),
 		)
 
 		fmt.Printf(
 			"Total Profit: %s\n",
-			format.ISK(c.Opp.TotalNetProfit),
+			format.ISK(cn.Opp.TotalNetProfit),
 		)
 	}
-}
-
-func RunMarket(args []string) {
-
-	if len(args) < 1 || len(args) > 2 {
-		fmt.Println("usage: market TYPE_ID [QUANTITY]")
-		return
-	}
-
-	typeID, err := strconv.Atoi(args[0])
-
-	if err != nil {
-		fmt.Println("invalid type id")
-		return
-	}
-
-	volume := 1
-
-	if len(args) == 2 {
-
-		volume, err = strconv.Atoi(args[1])
-
-		if err != nil || volume <= 0 {
-			fmt.Println("invalid quantity")
-			return
-		}
-	}
-
-	orders, err := esi.GetOrders(typeID)
-
-	if err != nil {
-		panic(err)
-	}
-
-	var buy float64
-	var sell float64
-
-	for _, o := range orders {
-
-		if o.IsBuyOrder {
-
-			if buy == 0 || o.Price > buy {
-				buy = o.Price
-			}
-
-		} else {
-
-			if sell == 0 || o.Price < sell {
-				sell = o.Price
-			}
-		}
-	}
-
-	result := market.Calculate(
-		buy,
-		sell,
-		volume,
-	)
-
-	fmt.Println("==============================")
-	fmt.Println("MARKET CHECK")
-	fmt.Println("==============================")
-
-	fmt.Println("Buy:", format.ISK(result.BuyPrice))
-	fmt.Println("Sell:", format.ISK(result.SellPrice))
-	fmt.Println("Volume:", result.Volume)
-	fmt.Printf("ROI: %.2f%%\n", result.ROI)
-	fmt.Println("Verdict:", result.Verdict)
-	fmt.Println("Total Profit:", format.ISK(result.TotalNetProfit))
 }
