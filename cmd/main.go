@@ -6,6 +6,7 @@ import (
 
 	"github.com/istvzsig/eve-trader/internal/config"
 	"github.com/istvzsig/eve-trader/internal/esi"
+	"github.com/istvzsig/eve-trader/internal/trader"
 )
 
 func main() {
@@ -15,6 +16,7 @@ func main() {
 	}
 
 	esiClient := esi.NewClient(config.BaseURL, config.Timeout)
+	marginTrader := trader.NewMarginTrader(esiClient, esiClient)
 
 	switch os.Args[1] {
 
@@ -25,7 +27,7 @@ func main() {
 		RunItem(esiClient, os.Args[2:])
 
 	case "margin-trade":
-		RunMarginTrader(esiClient, os.Args[2:])
+		RunMarginTrader(marginTrader, esiClient, os.Args[2:])
 
 	default:
 		help()

@@ -6,69 +6,71 @@ import (
 
 	"github.com/istvzsig/eve-trader/internal/esi"
 	"github.com/istvzsig/eve-trader/internal/parse"
+	"github.com/istvzsig/eve-trader/internal/trader"
 )
 
-type MarginOptions struct {
-	Target    float64
-	Low       float64
-	High      float64
-	MaxVolume int
-}
-
 func RunMarginTrader(
-	esiClient esi.EsiClient,
+	marginTrader *trader.MarginTrader,
+	itemResolver esi.ItemResolver,
 	args []string,
 ) {
+
+	if len(args) < 1 || len(args) > 2 {
+		fmt.Println(
+			"usage: eve-trader margin-trade ROI [MAX_VOLUME]",
+		)
+		return
+	}
 
 	target, err := parse.PercentArg(args[0])
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(
+			"invalid percent:",
+			args[0],
+		)
 		return
 	}
 
 	maxVolume := 1
 
 	if len(args) == 2 {
+
 		maxVolume, err = strconv.Atoi(args[1])
 
-		if err != nil {
-			fmt.Println(err)
+		if err != nil || maxVolume <= 0 {
+			fmt.Println(
+				"invalid volume:",
+				args[1],
+			)
 			return
 		}
 	}
 
-	opts := MarginOptions{
+	low := target - 5
+	high := target + 5
+
+	opts := trader.MarginOptions{
 		Target:    target,
-		Low:       target - 5,
-		High:      target + 5,
+		Low:       low,
+		High:      high,
 		MaxVolume: maxVolume,
 	}
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
 
-	orders, err := FetchBestOrders(esiClient)
+	candidates, err := marginTrader.FindCandidates(opts)
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(
+			"unable to find candidates:",
+			err,
+		)
 		return
 	}
-
-	candidates := BuildCandidates(
-		orders,
-		opts.Low,
-		opts.High,
-		opts.MaxVolume,
-	)
-
-	SortCandidates(candidates)
 
 	PrintHeader(opts)
 
 	PrintCandidates(
-		esiClient,
+		itemResolver,
 		candidates,
 	)
 }

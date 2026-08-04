@@ -6,10 +6,11 @@ import (
 	"github.com/istvzsig/eve-trader/internal/esi"
 	"github.com/istvzsig/eve-trader/internal/format"
 	"github.com/istvzsig/eve-trader/internal/model"
+	"github.com/istvzsig/eve-trader/internal/trader"
 )
 
 func PrintHeader(
-	opts MarginOptions,
+	opts trader.MarginOptions,
 ) {
 	fmt.Println("==============================")
 	fmt.Println("MARGIN TRADER")
