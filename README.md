@@ -91,13 +91,13 @@ After Fees:
 Check individual items:
 
 ```bash
-./eve-trader market TYPE_ID
+./eve-trader market ITEM_NAME
 ```
 
 Example:
 
 ```bash
-./eve-trader market 22291
+./eve-trader market "Ballistic Control System II"
 ```
 
 ---
@@ -123,7 +123,7 @@ Example:
 Search Jita for opportunities:
 
 ```bash
-./eve-trader margin-trade 20
+./eve-trader margin-trade 20%
 ```
 
 Example:
