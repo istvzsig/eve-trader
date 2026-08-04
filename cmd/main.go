@@ -14,7 +14,7 @@ func main() {
 		return
 	}
 
-	c := esi.NewClient(config.BaseURL)
+	esiClient := esi.NewClient(config.BaseURL, config.Timeout)
 
 	switch os.Args[1] {
 
@@ -22,10 +22,10 @@ func main() {
 		RunCalculator(os.Args[2:])
 
 	case "item":
-		RunItem(c, os.Args[2:])
+		RunItem(esiClient, os.Args[2:])
 
 	case "margin-trade":
-		RunMarginTrader(c, os.Args[2:])
+		RunMarginTrader(esiClient, os.Args[2:])
 
 	default:
 		help()

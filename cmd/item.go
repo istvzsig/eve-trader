@@ -2,80 +2,45 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/istvzsig/eve-trader/internal/esi"
 )
 
-func RunItem(c esi.Esi, args []string) {
-	if len(args) < 1 || len(args) > 2 {
-		fmt.Println("usage: item TYPE_NAME")
+func RunItem(
+	client esi.EsiClient,
+	args []string,
+) {
+
+	if len(args) != 1 {
+
+		fmt.Println(
+			`usage: eve-trader item "ITEM_NAME"`,
+		)
+
 		return
 	}
 
-	typeID, _ := strconv.Atoi(args[2])
-	typeName, _ := c.GetTypeName(typeID)
+	typeID, err := client.FindItemID(args[0])
 
-	fmt.Println("typeName", typeName)
+	if err != nil {
 
-	// typeID, err := strconv.Atoi(args[0])
+		fmt.Println(
+			"item not found:",
+			args[0],
+		)
 
-	// if err != nil {
-	// 	fmt.Println("invalid type id")
-	// 	return
-	// }
+		return
+	}
 
-	// volume := 1
+	name, err := client.GetItemName(typeID)
 
-	// if len(args) == 2 {
+	if err != nil {
 
-	// 	volume, err = strconv.Atoi(args[1])
+		fmt.Println(err)
 
-	// 	if err != nil || volume <= 0 {
-	// 		fmt.Println("invalid quantity")
-	// 		return
-	// 	}
-	// }
+		return
+	}
 
-	// orders, err := esi.GetOrders(typeID)
-
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// var buy float64
-	// var sell float64
-
-	// for _, o := range orders {
-
-	// 	if o.IsBuyOrder {
-
-	// 		if buy == 0 || o.Price > buy {
-	// 			buy = o.Price
-	// 		}
-
-	// 	} else {
-
-	// 		if sell == 0 || o.Price < sell {
-	// 			sell = o.Price
-	// 		}
-	// 	}
-	// }
-
-	// result := market.Calculate(
-	// 	buy,
-	// 	sell,
-	// 	volume,
-	// )
-
-	// fmt.Println("==============================")
-	// fmt.Println("ITEM CHECK")
-	// fmt.Println("==============================")
-
-	// fmt.Println("Buy:", format.ISK(result.BuyPrice))
-	// fmt.Println("Sell:", format.ISK(result.SellPrice))
-	// fmt.Println("Volume:", result.Volume)
-	// fmt.Printf("ROI: %.2f%%\n", result.ROI)
-	// fmt.Println("Verdict:", result.Verdict)
-	// fmt.Println("Total Profit:", format.ISK(result.TotalNetProfit))
+	fmt.Println("TypeID:", typeID)
+	fmt.Println("Name:", name)
 }
