@@ -1,14 +1,30 @@
 package esi
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 
 	"github.com/istvzsig/eve-trader/internal/model"
 )
 
+func (c *Client) FindItemID(
+	ctx context.Context,
+	name string,
+) (int, error) {
+
+	// TODO:
+	// ESI has no direct name lookup.
+	// Usually you use:
+	// /universe/ids/
+	//
+	// implement later
+
+	return 0, fmt.Errorf("esi: FindItemID not implemented")
+}
+
 func (c *Client) GetItemName(
+	ctx context.Context,
 	typeID int,
 ) (string, error) {
 
@@ -21,63 +37,21 @@ func (c *Client) GetItemName(
 
 	c.cacheMu.RUnlock()
 
-	url := fmt.Sprintf(
-		"%s/universe/types/%d/",
-		c.baseURL,
-		typeID,
-	)
+	u := fmt.Sprintf("%s/universe/types/%d/", c.baseURL, typeID)
 
-	resp, err := c.httpClient.Get(url)
-
+	body, _, err := c.get(ctx, u)
 	if err != nil {
 		return "", err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-
-		body, _ := io.ReadAll(resp.Body)
-
-		return "",
-			fmt.Errorf(
-				"esi type error: %s",
-				string(body),
-			)
 	}
 
 	var item model.TypeInfo
-
-	err = json.NewDecoder(
-		resp.Body,
-	).Decode(&item)
-
-	if err != nil {
-		return "", err
+	if err := json.Unmarshal(body, &item); err != nil {
+		return "", fmt.Errorf("esi: decoding item name: %w", err)
 	}
 
 	c.cacheMu.Lock()
-
 	c.cache[typeID] = item.Name
-
 	c.cacheMu.Unlock()
 
 	return item.Name, nil
-}
-
-func (c *Client) FindItemID(
-	name string,
-) (int, error) {
-
-	// TODO:
-	// ESI has no direct name lookup.
-	// Usually you use:
-	// /universe/ids/
-	//
-	// implement later
-
-	return 0,
-		fmt.Errorf(
-			"FindItemID not implemented",
-		)
 }

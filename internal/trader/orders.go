@@ -1,11 +1,10 @@
 package trader
 
 import (
+	"context"
+
 	"github.com/istvzsig/eve-trader/internal/config"
 	"github.com/istvzsig/eve-trader/internal/esi"
-	"github.com/istvzsig/eve-trader/internal/market"
-	"github.com/istvzsig/eve-trader/internal/model"
-	"github.com/istvzsig/eve-trader/internal/util"
 )
 
 type BestOrder struct {
@@ -15,55 +14,8 @@ type BestOrder struct {
 	SellVolume int
 }
 
-func BuildCandidates(
-	orders map[int]*BestOrder,
-	low float64,
-	high float64,
-	maxVolume int,
-) []model.Candidate {
-
-	candidates := make([]model.Candidate, 0)
-
-	for itemID, order := range orders {
-
-		if order.Buy == 0 || order.Sell == 0 {
-			continue
-		}
-
-		volume := util.MinValue(
-			maxVolume,
-			order.BuyVolume,
-			order.SellVolume,
-		)
-
-		if volume <= 0 {
-			continue
-		}
-
-		opportunity := market.Calculate(
-			order.Buy,
-			order.Sell,
-			volume,
-		)
-
-		if opportunity.ROI < low ||
-			opportunity.ROI > high {
-			continue
-		}
-
-		candidates = append(
-			candidates,
-			model.Candidate{
-				TypeID: itemID,
-				Opp:    opportunity,
-			},
-		)
-	}
-
-	return candidates
-}
-
 func FetchBestOrders(
+	ctx context.Context,
 	client esi.MarketClient,
 ) (map[int]*BestOrder, error) {
 
@@ -74,10 +26,7 @@ func FetchBestOrders(
 
 	for page <= totalPages {
 
-		orders, pages, err := client.GetRegionOrders(
-			page,
-			config.JitaID,
-		)
+		orders, pages, err := client.GetRegionOrders(ctx, page, config.JitaID)
 
 		if err != nil {
 			return nil, err

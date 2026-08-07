@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/istvzsig/eve-trader/internal/esi"
 	"github.com/istvzsig/eve-trader/internal/parse"
@@ -23,7 +25,6 @@ func RunMarginTrader(
 	}
 
 	target, err := parse.PercentArg(args[0])
-
 	if err != nil {
 		fmt.Println(
 			"invalid percent:",
@@ -35,7 +36,6 @@ func RunMarginTrader(
 	maxVolume := 1
 
 	if len(args) == 2 {
-
 		maxVolume, err = strconv.Atoi(args[1])
 
 		if err != nil || maxVolume <= 0 {
@@ -57,7 +57,10 @@ func RunMarginTrader(
 		MaxVolume: maxVolume,
 	}
 
-	candidates, err := marginTrader.FindCandidates(opts)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	candidates, err := marginTrader.FindCandidates(ctx, opts)
 
 	if err != nil {
 		fmt.Println(
@@ -69,8 +72,5 @@ func RunMarginTrader(
 
 	PrintHeader(opts)
 
-	PrintCandidates(
-		itemResolver,
-		candidates,
-	)
+	PrintCandidates(ctx, itemResolver, candidates)
 }

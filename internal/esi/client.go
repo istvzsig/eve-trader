@@ -16,9 +16,8 @@ type Client struct {
 }
 
 var (
-	_ EsiClient    = (*Client)(nil)
-	_ ItemResolver = (*Client)(nil)
 	_ MarketClient = (*Client)(nil)
+	_ ItemResolver = (*Client)(nil)
 )
 
 func NewClient(baseURL string, timeout time.Duration) *Client {

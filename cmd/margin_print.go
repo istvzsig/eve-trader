@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/istvzsig/eve-trader/internal/esi"
@@ -31,6 +32,7 @@ func PrintHeader(
 }
 
 func PrintCandidates(
+	ctx context.Context,
 	items esi.ItemResolver,
 	candidates []model.Candidate,
 ) {
@@ -39,9 +41,7 @@ func PrintCandidates(
 
 		cn := candidates[i]
 
-		name, err := items.GetItemName(
-			cn.TypeID,
-		)
+		name, err := items.GetItemName(ctx, cn.TypeID)
 
 		if err != nil {
 			name = "(unknown)"

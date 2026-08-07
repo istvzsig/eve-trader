@@ -1,106 +1,55 @@
 package esi
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"io"
+	"log"
+	"net/url"
 	"strconv"
 
 	"github.com/istvzsig/eve-trader/internal/model"
 )
 
-func (c *Client) GetOrders(
-	typeID int,
-	regionID int,
-) ([]model.MarketOrder, error) {
+func (c *Client) GetOrders(ctx context.Context, typeID, regionID int) ([]model.MarketOrder, error) {
+	u := fmt.Sprintf("%s/markets/%d/orders/", c.baseURL, regionID)
+	q := url.Values{"type_id": {strconv.Itoa(typeID)}}
 
-	url := fmt.Sprintf(
-		"%s/markets/%d/orders/?type_id=%d",
-		c.baseURL,
-		regionID,
-		typeID,
-	)
-
-	resp, err := c.httpClient.Get(url)
-
+	body, _, err := c.get(ctx, u+"?"+q.Encode())
 	if err != nil {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
-
-	if resp.StatusCode < 200 ||
-		resp.StatusCode >= 300 {
-
-		return nil,
-			fmt.Errorf(
-				"market error: %s",
-				resp.Status,
-			)
-	}
-
 	var orders []model.MarketOrder
-
-	err = json.NewDecoder(
-		resp.Body,
-	).Decode(&orders)
-
-	return orders, err
+	if err := json.Unmarshal(body, &orders); err != nil {
+		return nil, fmt.Errorf("esi: decoding orders: %w", err)
+	}
+	return orders, nil
 }
 
-func (c *Client) GetRegionOrders(
-	page int,
-	regionID int,
-) ([]model.MarketOrder, int, error) {
+func (c *Client) GetRegionOrders(ctx context.Context, page, regionID int) ([]model.MarketOrder, int, error) {
+	u := fmt.Sprintf("%s/markets/%d/orders/", c.baseURL, regionID)
+	q := url.Values{"page": {strconv.Itoa(page)}}
 
-	url := fmt.Sprintf(
-		"%s/markets/%d/orders/?page=%d",
-		c.baseURL,
-		regionID,
-		page,
-	)
-
-	resp, err := c.httpClient.Get(url)
-
+	body, headers, err := c.get(ctx, u+"?"+q.Encode())
 	if err != nil {
 		return nil, 0, err
-	}
-
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		return nil, 0, err
-	}
-
-	if resp.StatusCode < 200 ||
-		resp.StatusCode >= 300 {
-
-		return nil,
-			0,
-			fmt.Errorf(
-				"esi market error: %s",
-				string(body),
-			)
 	}
 
 	totalPages := 1
-
-	if value := resp.Header.Get("X-Pages"); value != "" {
-
-		if n, err := strconv.Atoi(value); err == nil {
-
+	if v := headers.Get("X-Pages"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
 			totalPages = n
+		} else {
+			// don't fail the request over a malformed pagination header -
+			// but don't stay silent either
+			log.Printf("esi: could not parse X-Pages header %q: %v", v, err)
 		}
 	}
 
 	var orders []model.MarketOrder
-
-	err = json.Unmarshal(
-		body,
-		&orders,
-	)
-
-	return orders, totalPages, err
+	if err := json.Unmarshal(body, &orders); err != nil {
+		return nil, 0, fmt.Errorf("esi: decoding region orders: %w", err)
+	}
+	return orders, totalPages, nil
 }
