@@ -23,11 +23,14 @@ func main() {
 	case "calculate":
 		RunCalculator(os.Args[2:])
 
-	case "item":
-		RunItem(esiClient, os.Args[2:])
+	case "margin-item":
+		RunMarginItem(esiClient, os.Args[2:])
 
 	case "margin-trade":
 		RunMarginTrader(marginTrader, esiClient, os.Args[2:])
+
+	case "wh-help":
+		WormholeHelper()
 
 	default:
 		help()
@@ -42,11 +45,13 @@ Commands:
 1. > calculate SELL BUY [VOLUME]
 Example:
 	eve-trader calculate 417 282 3
-2. > item ITEM_NAME
+2. > margin-item ITEM_NAME
 Example:
-	eve-trader item "Ballistic Control System II"
-3. > margin-trade PERCENT
+	eve-trader margin-item "Ballistic Control System II"
+3. > margin-trade PERCENT [MAX_VOLUME]
 Examples:
 	eve-trader margin-trade 15%
+4. > wh-help
+Prints wormhole bookmarking checklist.
 	`)
 }
