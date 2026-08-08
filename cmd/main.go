@@ -32,6 +32,9 @@ func main() {
 	case "wh-help":
 		RunWormholeHelper()
 
+	case "isk-challenge":
+		RunISKChallenge()
+
 	default:
 		help()
 	}
@@ -43,6 +46,7 @@ EVE Trader Help:
 
 Commands:
 1. > calculate SELL BUY [VOLUME]
+Description: (SELL / BUY) is multiplied by 1000
 Example:
 	eve-trader calculate 417 282 3
 2. > margin-item ITEM_NAME
@@ -52,6 +56,10 @@ Example:
 Examples:
 	eve-trader margin-trade 15%
 4. > wh-help
-Prints wormhole bookmarking checklist.
+	Prints wormhole bookmarking checklist.
+5. > isk-challenge TARGET CURRENT
+Description: (TARGET / CURRENT) is multiplied by 1000000
+Examples:
+	eve-trader isk-challenge 420 55
 	`)
 }
