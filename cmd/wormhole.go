@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func WormholeHelper() {
+func RunWormholeHelper() {
 	fmt.Println(`
 	EVE WH BOOKMARKING
 

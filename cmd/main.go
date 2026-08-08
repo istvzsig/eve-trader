@@ -30,7 +30,7 @@ func main() {
 		RunMarginTrader(marginTrader, esiClient, os.Args[2:])
 
 	case "wh-help":
-		WormholeHelper()
+		RunWormholeHelper()
 
 	default:
 		help()
