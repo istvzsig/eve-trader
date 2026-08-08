@@ -113,7 +113,7 @@ Test a trade:
 Example:
 
 ```bash
-./eve-trader calculate 417 282 3
+./eve-trader calculate 4.2m 400k 1
 ```
 
 ---
@@ -142,6 +142,22 @@ ROI:
 
 Profit:
 2.50M ISK
+```
+
+---
+
+### ISK Challenge
+
+Test a trade:
+
+```bash
+./eve-trader isk-challenge TARGET CURRENT
+```
+
+Example:
+
+```bash
+./eve-trader isk-challenge 500m 65m
 ```
 
 ---

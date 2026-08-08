@@ -15,11 +15,8 @@ func RunCalculator(args []string) {
 		return
 	}
 
-	sellInput, _ := strconv.ParseFloat(args[0], 64)
-	buyInput, _ := strconv.ParseFloat(args[1], 64)
-
-	sell := parse.ISK(sellInput)
-	buy := parse.ISK(buyInput)
+	sell, _ := parse.ISK(args[0])
+	buy, _ := parse.ISK(args[1])
 
 	volume := 1
 
