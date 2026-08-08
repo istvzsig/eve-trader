@@ -46,9 +46,8 @@ EVE Trader Help:
 
 Commands:
 1. > calculate SELL BUY [VOLUME]
-Description: (SELL / BUY) is multiplied by 1000
 Example:
-	eve-trader calculate 417 282 3
+	eve-trader calculate 41m 282k 3
 2. > margin-item ITEM_NAME
 Example:
 	eve-trader margin-item "Ballistic Control System II"
@@ -58,8 +57,8 @@ Examples:
 4. > wh-help
 	Prints wormhole bookmarking checklist.
 5. > isk-challenge TARGET CURRENT
-Description: (TARGET / CURRENT) is multiplied by 1000000
+Description: (TARGET - CURRENT)
 Examples:
-	eve-trader isk-challenge 420 55
+	eve-trader isk-challenge 420m 55k
 	`)
 }
