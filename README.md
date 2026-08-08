@@ -154,10 +154,26 @@ Test a trade:
 ./eve-trader isk-challenge TARGET CURRENT
 ```
 
+Description:
+
+I saves the current challange to a `.json` file.
+
 Example:
 
 ```bash
 ./eve-trader isk-challenge 500m 65m
+```
+
+To update the current challange:
+
+```bash
+./eve-trader isk-challenge add 420m
+```
+
+You can reset it by command below:
+
+```bash
+./eve-trader isk-challenge reset
 ```
 
 ---

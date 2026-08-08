@@ -11,8 +11,8 @@ import (
 )
 
 type ChallengeState struct {
-	Target  int64 `json:"target"`
-	Current int64 `json:"current"`
+	Target  float64 `json:"target"`
+	Current float64 `json:"current"`
 }
 
 func RunISKChallenge() {
@@ -25,6 +25,25 @@ func RunISKChallenge() {
 		}
 
 		printChallenge(state)
+
+	case 3:
+		switch os.Args[2] {
+		case "reset":
+			if err := os.Remove(challengePath()); err != nil {
+				if os.IsNotExist(err) {
+					fmt.Println("No saved challenge.")
+					return
+				}
+
+				fmt.Println(err)
+				return
+			}
+
+			fmt.Println("Challenge reset.")
+
+		default:
+			fmt.Printf("Usage: %s isk-challenge reset\n", os.Args[0])
+		}
 
 	case 4:
 		if os.Args[2] == "add" {
@@ -40,7 +59,7 @@ func RunISKChallenge() {
 				return
 			}
 
-			state.Current += int64(amount)
+			state.Current += amount
 
 			if err := saveChallenge(state); err != nil {
 				fmt.Println(err)
@@ -64,8 +83,8 @@ func RunISKChallenge() {
 		}
 
 		state := ChallengeState{
-			Target:  int64(target),
-			Current: int64(current),
+			Target:  target,
+			Current: current,
 		}
 
 		if err := saveChallenge(state); err != nil {
@@ -80,16 +99,12 @@ func RunISKChallenge() {
 		fmt.Printf("  %s isk-challenge\n", os.Args[0])
 		fmt.Printf("  %s isk-challenge <target> <current>\n", os.Args[0])
 		fmt.Printf("  %s isk-challenge add <amount>\n", os.Args[0])
+		fmt.Printf("  %s isk-challenge reset\n", os.Args[0])
 	}
 }
 
 func challengePath() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return ".eve-trader/isk-challenge.json"
-	}
-
-	return filepath.Join(home, ".eve-trader", "isk-challenge.json")
+	return "isk-challenge.json"
 }
 
 func loadChallenge() (ChallengeState, error) {
