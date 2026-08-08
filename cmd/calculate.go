@@ -37,18 +37,20 @@ func RunCalculator(args []string) {
 	fmt.Println("===========================================")
 
 	fmt.Printf(
-		"Sell Price:      %s\n",
-		format.ISK(sell),
-	)
-
-	fmt.Printf(
-		"Buy Price:       %s\n",
-		format.ISK(buy),
-	)
-
-	fmt.Printf(
 		"Volume:          %d\n",
 		volume,
+	)
+
+	fmt.Printf(
+		"Sell Price:      %s (%s)\n",
+		format.ISK(sell),
+		format.ISK(sell*float64(volume)),
+	)
+
+	fmt.Printf(
+		"Buy Price:       %s (%s)\n",
+		format.ISK(buy),
+		format.ISK(buy*float64(volume)),
 	)
 
 	fmt.Println("-------------------------------------------")
