@@ -91,13 +91,13 @@ After Fees:
 Check individual items:
 
 ```bash
-./eve-trader market ITEM_NAME
+./eve-trader margin-item ITEM_NAME
 ```
 
 Example:
 
 ```bash
-./eve-trader market "Ballistic Control System II"
+./eve-trader margin-item "Ballistic Control System II"
 ```
 
 ---
