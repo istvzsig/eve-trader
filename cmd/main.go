@@ -24,7 +24,7 @@ func main() {
 		RunCalculator(os.Args[2:])
 
 	case "item-price":
-		RunItemPrice(esiClient, os.Args[2:])
+		RunItemPrice(esiClient, esiClient, os.Args[2:])
 
 	case "margin-trade":
 		RunMarginTrader(marginTrader, esiClient, os.Args[2:])
