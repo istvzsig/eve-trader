@@ -23,8 +23,8 @@ func main() {
 	case "calculate":
 		RunCalculator(os.Args[2:])
 
-	case "margin-item":
-		RunMarginItem(esiClient, os.Args[2:])
+	case "item-price":
+		RunItemPrice(esiClient, os.Args[2:])
 
 	case "margin-trade":
 		RunMarginTrader(marginTrader, esiClient, os.Args[2:])
@@ -50,7 +50,9 @@ Example:
 	eve-trader calculate 41m 282k 3
 2. > margin-item ITEM_NAME
 Example:
-	eve-trader margin-item "Ballistic Control System II"
+	./eve-trader item-price "Ballistic Control System II"
+With quantity:
+	./eve-trader item-price "Ballistic Control System II" [QUANTITY]
 3. > margin-trade PERCENT [MAX_VOLUME]
 Examples:
 	eve-trader margin-trade 15%
