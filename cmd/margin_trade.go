@@ -63,7 +63,6 @@ func RunMarginTrader(
 	defer cancel()
 
 	candidates, err := marginTrader.FindCandidates(ctx, opts)
-
 	if err != nil {
 		fmt.Println(
 			"unable to find candidates:",
@@ -72,9 +71,26 @@ func RunMarginTrader(
 		return
 	}
 
+	// Collect all TypeIDs from the candidates.
+	ids := make([]int, 0, len(candidates))
+
+	for _, candidate := range candidates {
+		ids = append(ids, candidate.TypeID)
+	}
+
+	// Resolve all names with one ESI request.
+	names, err := itemResolver.ResolveNames(ctx, ids)
+	if err != nil {
+		fmt.Println(
+			"unable to resolve item names:",
+			err,
+		)
+		return
+	}
+
 	PrintHeader(opts)
 
-	PrintCandidates(ctx, itemResolver, candidates)
+	PrintCandidates(names, candidates)
 }
 
 func PrintHeader(
@@ -99,8 +115,7 @@ func PrintHeader(
 }
 
 func PrintCandidates(
-	ctx context.Context,
-	items esi.ItemResolver,
+	names map[int]string,
 	candidates []model.Candidate,
 ) {
 
@@ -108,9 +123,9 @@ func PrintCandidates(
 
 		cn := candidates[i]
 
-		name, err := items.GetItemName(ctx, cn.TypeID)
+		name := names[cn.TypeID]
 
-		if err != nil {
+		if name == "" {
 			name = "(unknown)"
 		}
 
