@@ -3,15 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/istvzsig/eve-trader/internal/esi"
 )
 
-func RunMarginItem(ir esi.ItemResolver, args []string) {
-
-	if len(args) != 1 {
-		fmt.Println(`usage: eve-trader margin-item "ITEM_NAME"`)
+func RunItemPrice(ir esi.ItemResolver, args []string) {
+	if len(args) != 2 {
+		fmt.Println(`usage: ./eve-trader item-price "ITEM_NAME" [QUANTITY]`)
 		return
 	}
 
@@ -24,12 +24,13 @@ func RunMarginItem(ir esi.ItemResolver, args []string) {
 		return
 	}
 
-	name, err := ir.GetItemName(ctx, typeID)
-	if err != nil {
-		fmt.Println(err)
+	quantity, err := strconv.Atoi(args[1])
+	if err != nil || quantity <= 0 {
+		fmt.Println("invalid quantity:", args[1])
 		return
 	}
 
 	fmt.Println("TypeID:", typeID)
-	fmt.Println("Name:", name)
+	fmt.Println("Name:", args[0])
+	fmt.Println("Quantity:", quantity)
 }
