@@ -8,50 +8,82 @@ import (
 	"github.com/istvzsig/eve-trader/internal/model"
 )
 
+type inventoryType struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+type idsResponse struct {
+	InventoryTypes []inventoryType `json:"inventory_types"`
+}
+
 func (c *Client) FindItemID(
 	ctx context.Context,
 	name string,
 ) (int, error) {
 
-	// TODO:
-	// ESI has no direct name lookup.
-	// Usually you use:
-	// /universe/ids/
-	//
-	// implement later
+	u := fmt.Sprintf("%s/universe/ids/", c.baseURL)
 
-	return 0, fmt.Errorf("esi: FindItemID not implemented")
+	payload, err := json.Marshal([]string{name})
+	if err != nil {
+		return 0, fmt.Errorf("esi: encoding item name: %w", err)
+	}
+
+	body, _, err := c.post(ctx, u, payload)
+	if err != nil {
+		return 0, fmt.Errorf("esi: finding item %q: %w", name, err)
+	}
+
+	var result idsResponse
+	if err := json.Unmarshal(body, &result); err != nil {
+		return 0, fmt.Errorf("esi: decoding item IDs: %w", err)
+	}
+
+	for _, item := range result.InventoryTypes {
+		if item.Name == name {
+			return item.ID, nil
+		}
+	}
+
+	return 0, fmt.Errorf("esi: item not found: %q", name)
 }
 
-func (c *Client) GetItemName(
+func (c *Client) ResolveNames(
 	ctx context.Context,
-	typeID int,
-) (string, error) {
+	ids []int,
+) (map[int]string, error) {
 
-	c.cacheMu.RLock()
-
-	if name, ok := c.cache[typeID]; ok {
-		c.cacheMu.RUnlock()
-		return name, nil
+	if len(ids) == 0 {
+		return map[int]string{}, nil
 	}
 
-	c.cacheMu.RUnlock()
+	u := fmt.Sprintf("%s/universe/names/", c.baseURL)
 
-	u := fmt.Sprintf("%s/universe/types/%d/", c.baseURL, typeID)
-
-	body, _, err := c.get(ctx, u)
+	payload, err := json.Marshal(ids)
 	if err != nil {
-		return "", err
+		return nil, fmt.Errorf("esi: encoding IDs: %w", err)
 	}
 
-	var item model.TypeInfo
-	if err := json.Unmarshal(body, &item); err != nil {
-		return "", fmt.Errorf("esi: decoding item name: %w", err)
+	body, _, err := c.post(ctx, u, payload)
+	if err != nil {
+		return nil, fmt.Errorf("esi: resolving names: %w", err)
 	}
 
-	c.cacheMu.Lock()
-	c.cache[typeID] = item.Name
-	c.cacheMu.Unlock()
+	var result []model.NameInfo
 
-	return item.Name, nil
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("esi: decoding names: %w", err)
+	}
+
+	names := make(map[int]string, len(result))
+
+	for _, item := range result {
+		if item.Category != "inventory_type" {
+			continue
+		}
+
+		names[item.ID] = item.Name
+	}
+
+	return names, nil
 }
