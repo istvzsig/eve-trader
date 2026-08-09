@@ -8,7 +8,7 @@ import (
 
 type ItemResolver interface {
 	FindItemID(ctx context.Context, name string) (int, error)
-	GetItemName(ctx context.Context, id int) (string, error)
+	ResolveNames(ctx context.Context, ids []int) (map[int]string, error)
 }
 
 type MarketClient interface {
