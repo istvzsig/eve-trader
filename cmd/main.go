@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
 
 	"github.com/istvzsig/eve-trader/internal/config"
 	"github.com/istvzsig/eve-trader/internal/esi"
@@ -15,20 +17,33 @@ func main() {
 		return
 	}
 
+	cfg, err := config.Load()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "configuration error: %v\n", err)
+		os.Exit(1)
+	}
+
+	if len(os.Args) < 2 {
+		help()
+		return
+	}
+
 	esiClient := esi.NewClient(
-		config.Env.ClientID,
-		config.Env.ClientSecret,
-		config.Env.RedirectURI,
+		config.BaseURL,
+		cfg.ClientID,
+		cfg.ClientSecret,
+		cfg.RedirectURI,
 		config.Timeout,
 	)
 
 	marginTrader := trader.NewMarginTrader(esiClient, esiClient)
 
 	switch os.Args[1] {
-
-	case "authenticate":
-		fmt.Println("auth")
-		// RunCalculator(os.Args[2:])
+	case "auth":
+		if err := runAuth(esiClient); err != nil {
+			fmt.Fprintf(os.Stderr, "authentication failed: %v\n", err)
+			os.Exit(1)
+		}
 
 	case "calculate":
 		RunCalculator(os.Args[2:])
@@ -48,6 +63,18 @@ func main() {
 	default:
 		help()
 	}
+}
+
+func runAuth(client *esi.Client) error {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	if _, err := client.GetAccessToken(ctx); err != nil {
+		return err
+	}
+
+	fmt.Println("EVE Online authentication successful.")
+	return nil
 }
 
 func help() {
@@ -72,5 +99,7 @@ Examples:
 Description: (TARGET - CURRENT)
 Examples:
 	eve-trader isk-challenge 420m 55k
+6. > auth
+	Authenticate with EVE Online.
 	`)
 }

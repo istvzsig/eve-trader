@@ -2,14 +2,16 @@ package esi
 
 import (
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
 
 type Client struct {
-	clientID    string
-	baseURL     string
-	redirectURI string
+	clientID     string
+	clientSecret string
+	baseURL      string
+	redirectURI  string
 
 	httpClient *http.Client
 
@@ -22,16 +24,20 @@ var (
 	_ ItemResolver = (*Client)(nil)
 )
 
-func NewClient(clientID, baseURL, redirectURI string, timeout time.Duration) *Client {
+func NewClient(
+	baseURL string,
+	clientID string,
+	clientSecret string,
+	redirectURI string,
+	timeout time.Duration,
+) *Client {
 	return &Client{
-		clientID:    clientID,
-		baseURL:     baseURL,
-		redirectURI: redirectURI,
-
+		baseURL:      strings.TrimRight(baseURL, "/"),
+		clientID:     clientID,
+		clientSecret: clientSecret,
+		redirectURI:  redirectURI,
 		httpClient: &http.Client{
 			Timeout: timeout,
 		},
-
-		cache: make(map[int]string),
 	}
 }
