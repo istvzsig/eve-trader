@@ -7,7 +7,9 @@ import (
 )
 
 type Client struct {
-	baseURL string
+	clientID    string
+	baseURL     string
+	redirectURI string
 
 	httpClient *http.Client
 
@@ -20,9 +22,11 @@ var (
 	_ ItemResolver = (*Client)(nil)
 )
 
-func NewClient(baseURL string, timeout time.Duration) *Client {
+func NewClient(clientID, baseURL, redirectURI string, timeout time.Duration) *Client {
 	return &Client{
-		baseURL: baseURL,
+		clientID:    clientID,
+		baseURL:     baseURL,
+		redirectURI: redirectURI,
 
 		httpClient: &http.Client{
 			Timeout: timeout,

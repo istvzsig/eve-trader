@@ -15,10 +15,20 @@ func main() {
 		return
 	}
 
-	esiClient := esi.NewClient(config.BaseURL, config.Timeout)
+	esiClient := esi.NewClient(
+		config.Env.ClientID,
+		config.Env.ClientSecret,
+		config.Env.RedirectURI,
+		config.Timeout,
+	)
+
 	marginTrader := trader.NewMarginTrader(esiClient, esiClient)
 
 	switch os.Args[1] {
+
+	case "authenticate":
+		fmt.Println("auth")
+		// RunCalculator(os.Args[2:])
 
 	case "calculate":
 		RunCalculator(os.Args[2:])
