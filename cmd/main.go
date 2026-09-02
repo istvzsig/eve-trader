@@ -60,6 +60,9 @@ func main() {
 	case "isk-challenge":
 		RunISKChallenge()
 
+	case "implant-prices":
+		RunImplantsPrice(esiClient, esiClient)
+
 	default:
 		help()
 	}

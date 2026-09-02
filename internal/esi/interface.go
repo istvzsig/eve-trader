@@ -9,6 +9,7 @@ import (
 type ItemResolver interface {
 	FindItemID(ctx context.Context, name string) (int, error)
 	ResolveNames(ctx context.Context, ids []int) (map[int]string, error)
+	FindImplants(ctx context.Context) ([]model.TypeInfo, error)
 }
 
 type MarketClient interface {
