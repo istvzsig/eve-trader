@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/istvzsig/eve-trader/internal/config"
 	"github.com/istvzsig/eve-trader/internal/esi"
 	"github.com/istvzsig/eve-trader/internal/format"
 	"github.com/istvzsig/eve-trader/internal/market"
@@ -42,7 +43,7 @@ func RunItemPrice(
 	orders, err := marketClient.GetOrders(
 		ctx,
 		typeID,
-		10000002, // The Forge
+		config.JitaID, // The Forge
 	)
 	if err != nil {
 		fmt.Println("unable to get market orders:", err)
